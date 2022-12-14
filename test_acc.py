@@ -157,9 +157,10 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--name_filter", type=str, help="target model name filter", default="")
     parser.add_argument("-s", "--subset", type=int, help="subset size", default=0)
     parser.add_argument("--bf16", type=bool, help="ENFORCE_BF16", default=False)
-    parser.add_argument("--model_base", type=str, default="/home/dev/common/sk_13sept_75models_22.2_int8/")
+    parser.add_argument("--model_base", type=str, default="/home/dev/cecilia/dev/reference/openvino/model-validation-toolbox/10-91-242-212.iotg.sclab.intel.com/cv_bench_cache/try_builds_cache/sk_2sept_700models_22.2")
     parser.add_argument("--cmp", nargs="+")
     parser.add_argument("-v", "--verbose", action="count", default=0)
+    parser.add_argument("--dyn", type=bool, help="enforce undefined shapes in network to be dynamic", default=False)
     args = parser.parse_args()
 
     if (args.cmp):
@@ -181,6 +182,11 @@ if __name__ == "__main__":
     else:
         ACCCFG = ""
 
+    if args.dyn:
+        DYNCFG = f"--undefined_shapes_resolving_policy dynamic --use_new_api True"
+    else:
+        DYNCFG = f"--undefined_shapes_resolving_policy static --use_new_api True"
+
     print(f"generating device config file in {device_config_path}...")
     utils.gen_device_config(device_config_path, args.bf16)
 
@@ -199,7 +205,7 @@ if __name__ == "__main__":
             prefix="# "
 
         mpath = os.path.join(args.model_base, xml)
-        acc_cmd = f"{prefix}accuracy_check --target_framework dlsdk -td CPU --device_config {device_config_path} --definitions {utils.definitions_file} --source {utils.data_source} --annotations {utils.annotations} --model_attributes {utils.model_attributes} --models {mpath} -c {accyml} {ACCCFG}"
+        acc_cmd = f"{prefix}accuracy_check --target_framework dlsdk -td CPU --device_config {device_config_path} --definitions {utils.definitions_file} --source {utils.data_source} --annotations {utils.annotations} --model_attributes {utils.model_attributes} --models {mpath} -c {accyml} {ACCCFG} {DYNCFG}"
         print(f"======================={i}/{len(models)}")
         print(f"$ {acc_cmd}", flush=True)
         os.system(acc_cmd)
