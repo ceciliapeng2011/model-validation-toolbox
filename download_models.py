@@ -24,14 +24,22 @@ def scrape(vgm_url):
     #print(dldt_urls)
     return dldt_urls
 
+modelset=set()
 def download(targets):
     for url in targets:
-        print(url)
+        # print(url)
+        model_name=os.path.relpath(url, 'http://10-91-242-212.iotg.sclab.intel.com/cv_bench_cache/try_builds_cache/').split('/')[1]
+        # print(model_name)
+        modelset.add(model_name)
         wget_cmd=f"wget -r --no-parent --reject index.html* -c -N {url}"
-        os.system(wget_cmd)
+        # os.system(wget_cmd)
     
-download(scrape("http://conformance.sclab.intel.com/neo4j/models/lookupmodels?opname=TensorIterator&opset=1"))
-download(scrape("http://conformance.sclab.intel.com/neo4j/models/lookupmodels?opname=Loop&opset=5"))
-download(scrape("http://conformance.sclab.intel.com/neo4j/models/lookupmodels?opname=LSTMSequence&opset=5"))
-download(scrape("http://conformance.sclab.intel.com/neo4j/models/lookupmodels?opname=ReverseSequence&opset=1"))
-download(scrape("http://conformance.sclab.intel.com/neo4j/models/lookupmodels?opname=GRUSequence"))
+download(scrape("http://conformance.sclab.intel.com/neo4j/models/lookupmodels?opname=NonMaxSuppression&opset=5"))
+download(scrape("http://conformance.sclab.intel.com/neo4j/models/lookupmodels?opname=NonMaxSuppression&opset=9"))
+download(scrape("http://conformance.sclab.intel.com/neo4j/models/lookupmodels?opname=MulticlassNms&opset=9"))
+download(scrape("http://conformance.sclab.intel.com/neo4j/models/lookupmodels?opname=MatrixNms&opset=8"))
+
+models=list(modelset)
+models.sort()
+print("\n".join(models))
+print("\nThere are total ", len(modelset), " models.")
